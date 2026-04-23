@@ -1,0 +1,286 @@
+<!--<!DOCTYPE html>
+<html>
+<head>
+    <title>Live Monitoring</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<div class="navbar">
+    <div><b>☁ Cloud Monitor</b></div>
+    <div>
+        <a href="/">Home</a>
+        <a href="/dashboard/">Dashboard</a>
+        <a href="/monitor/">Live Monitor</a>
+    </div>
+</div>
+
+<div class="container">
+
+    <h1>📡 Live Monitoring</h1>
+
+    // Dropdown 
+    <select id="urlSelect">
+        {% for url in urls %}
+        <option value="{{ url }}">{{ url }}</option>
+        {% endfor %}
+    </select>
+
+    <div id="statsBox"></div>
+
+    <canvas id="chart" width="400" height="200"></canvas>
+
+</div>
+
+<script>
+let chart;
+
+async function loadData() {
+    const url = document.getElementById("urlSelect").value;
+
+    const res = await fetch(`/api/monitor-data/?url=${url}`);
+    const data = await res.json();
+
+    const labels = data.map(d => d.time);
+    const values = data.map(d => d.response_time);
+
+    if (chart) chart.destroy();
+
+    chart = new Chart(document.getElementById("chart"), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Response Time (ms)",
+                data: values
+            }]
+        }
+    });
+}
+
+// Load initial
+loadData();
+
+// Auto refresh every 10 sec
+setInterval(loadData, 10000);
+
+// Change URL
+document.getElementById("urlSelect").addEventListener("change", loadData);
+
+const statsData = {{ stats|safe }};
+
+function updateStats(url) {
+    const s = statsData[url];
+
+    document.getElementById("statsBox").innerHTML = `
+        <div class="card">
+            <h3>📊 Stats for ${url}</h3>
+            <p>Total Checks: ${s.total}</p>
+            <p>Active: ${s.active}</p>
+            <p>Broken: ${s.broken}</p>
+            <p><b>Uptime: ${s.uptime}%</b></p>
+        </div>
+    `;
+}
+</script>
+
+</body>
+</html>-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Monitoring</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <div><b>☁ Cloud Monitor</b></div>
+
+    <div>
+        <a href="/">Home</a>
+        <a href="/dashboard/">Dashboard</a>
+        <a href="/monitor/">📡 Live Monitor</a>
+        <a href="/reports/">📁 My Reports</a>
+
+        {% if user.is_authenticated %}
+            <span style="margin-left:15px;">👤 {{ user.username }}</span>
+
+            <form method="post" action="/logout/" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" style="
+                    background:none;
+                    border:none;
+                    color:white;
+                    cursor:pointer;
+                    font-size:16px;
+                    margin-left:10px;
+                ">
+                    Logout
+                </button>
+            </form>
+        {% else %}
+            <a href="/login/">Login</a>
+            <a href="/signup/">Signup</a>
+        {% endif %}
+
+        <button onclick="toggleDarkMode()" style="margin-left:20px;">🌙</button>
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+
+    <h1>📡 Live Monitoring</h1>
+
+    <!-- URL Dropdown -->
+    <select id="urlSelect" style="padding:10px; border-radius:6px; margin-bottom:20px;">
+        {% for url in urls %}
+        <option value="{{ url }}">{{ url }}</option>
+        {% endfor %}
+    </select>
+
+    <!-- Stats Box -->
+    <div id="statsBox"></div>
+
+    <!-- Chart -->
+    <canvas id="chart" width="400" height="200"></canvas>
+
+</div>
+
+<!-- SCROLL BUTTON -->
+<button class="scroll-top" id="scrollBtn">↑</button>
+
+<!-- COOKIE -->
+<div class="cookie-icon" onclick="toggleCookie()">🍪</div>
+
+<div class="cookie-popup" id="cookiePopup">
+    <p>We use cookies for login sessions and preferences.</p>
+    <button onclick="acceptCookies()">Accept</button>
+    <button onclick="declineCookies()">Decline</button>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+    © 2026 Cloud Monitor | Built with Django ☁️
+</div>
+
+<!-- JAVASCRIPT -->
+<script>
+
+let chart;
+
+// Stats data from backend
+const statsData = {{ stats|safe }};
+
+// Update Stats UI
+function updateStats(url) {
+    const s = statsData[url];
+    if (!s) return;
+
+    document.getElementById("statsBox").innerHTML = `
+        <div class="card">
+            <h3>📊 Stats for ${url}</h3>
+            <p>Total Checks: ${s.total}</p>
+            <p style="color:green;">Active: ${s.active}</p>
+            <p style="color:red;">Broken: ${s.broken}</p>
+            <p><b>Uptime: ${s.uptime}%</b></p>
+        </div>
+    `;
+}
+
+// Load Graph + Stats
+async function loadData() {
+    const url = document.getElementById("urlSelect").value;
+
+    updateStats(url);
+
+    const res = await fetch(`/api/monitor-data/?url=${url}`);
+    const data = await res.json();
+
+    const labels = data.map(d => d.time);
+    const values = data.map(d => d.response_time);
+
+    if (chart) chart.destroy();
+
+    chart = new Chart(document.getElementById("chart"), {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "Response Time (ms)",
+                data: values,
+                fill: false,
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+}
+
+// Initial Load
+loadData();
+
+// Auto Refresh
+setInterval(loadData, 10000);
+
+// Change URL
+document.getElementById("urlSelect").addEventListener("change", loadData);
+
+// Dark Mode
+function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+    localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
+}
+
+// Scroll Button
+const scrollBtn = document.getElementById("scrollBtn");
+window.onscroll = function () {
+    scrollBtn.style.display = window.scrollY > 200 ? "block" : "none";
+};
+scrollBtn.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
+// Cookie
+function toggleCookie() {
+    document.getElementById("cookiePopup").style.display = "block";
+}
+function acceptCookies() {
+    localStorage.setItem("cookiesAccepted", "true");
+    document.getElementById("cookiePopup").style.display = "none";
+}
+function declineCookies() {
+    localStorage.setItem("cookiesAccepted", "false");
+    document.getElementById("cookiePopup").style.display = "none";
+}
+
+// Load settings
+window.onload = function () {
+    if (!localStorage.getItem("cookiesAccepted")) {
+        document.getElementById("cookiePopup").style.display = "block";
+    }
+    if (localStorage.getItem("theme") === "dark") {
+        document.body.classList.add("dark-mode");
+    }
+};
+
+</script>
+
+</body>
+</html>

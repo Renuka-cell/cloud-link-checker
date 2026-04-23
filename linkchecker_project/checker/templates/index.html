@@ -1,0 +1,230 @@
+<!--<!DOCTYPE html>
+<html>
+<head>
+    <title>Cloud Link Checker</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+
+<body>-->
+
+    <!-- 🔗 Navigation -->
+    <!--<div style="margin-bottom: 20px;">
+        <a href="/" style="margin-right: 15px; font-weight: bold;">🏠 Home</a>
+        <a href="/dashboard/" style="font-weight: bold;">📊 Dashboard</a>
+    </div>
+
+    <h1>Cloud Link Checker 🔗</h1>
+
+    <textarea id="urls" rows="10" cols="50" placeholder="Enter URLs (one per line)"></textarea>
+    <br><br>
+
+    <button onclick="checkLinks()">Check Links</button>
+
+    <h2>Results:</h2>
+    <ul id="results"></ul>
+
+    <script>
+        async function checkLinks() {
+            const input = document.getElementById("urls").value;
+            const urls = input.split("\n");
+
+            const response = await fetch("/api/check", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(urls)
+            });
+
+            const data = await response.json();
+
+            const resultsList = document.getElementById("results");
+            resultsList.innerHTML = "";
+
+            data.forEach(item => {
+                const li = document.createElement("li");
+
+                let statusColor = item.status === "Active" ? "green" : "red";
+                let healthColor =
+                    item.health === "Good" ? "green" :
+                    item.health === "Slow" ? "orange" : "red";
+
+                li.innerHTML = `
+                    <b>${item.url}</b><br>
+                    Status: <span style="color:${statusColor}; font-weight:bold;">${item.status}</span><br>
+                    Response Time: ${item.response_time ? item.response_time + " ms" : "N/A"}<br>
+                    Health: <span style="color:${healthColor};">${item.health}</span>
+                `;
+
+                resultsList.appendChild(li);
+            });
+        }
+    </script>
+
+</body>
+</html>-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Monitoring System</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <div><b>☁ Cloud Monitor</b></div>
+
+    <div>
+        <a href="/">Home</a>
+        <a href="/dashboard/">Dashboard</a>
+        <a href="/monitor/">📡 Live Monitor</a>
+
+        {% if user.is_authenticated %}
+            <span style="margin-left:15px;">👤 {{ user.username }}</span>
+
+            <form method="post" action="/logout/" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" style="
+                    background:none;
+                    border:none;
+                    color:white;
+                    cursor:pointer;
+                    font-size:16px;
+                    margin-left:10px;
+                ">
+                    Logout
+                </button>
+            </form>
+        {% else %}
+            <a href="/login/">Login</a>
+            <a href="/signup/">Signup</a>
+        {% endif %}
+
+        <button onclick="toggleDarkMode()" style="margin-left:20px;">🌙</button>
+    </div>
+</div>
+
+<!-- CONTENT -->
+<div class="container">
+
+    <h1>Website Monitoring Tool 🔗</h1>
+    <p>Monitor your websites in real-time with cloud-powered analysis</p>
+
+    <div class="card">
+        <textarea id="urls" rows="8" placeholder="Enter URLs (one per line)"></textarea>
+        <br>
+        <button onclick="checkLinks()">Check Links</button>
+        <p id="loading" style="display:none;">⏳ Checking links...</p>
+    </div>
+
+    <h2>Results</h2>
+    <div id="results"></div>
+
+</div>
+
+<!-- SCROLL BUTTON -->
+<button class="scroll-top" id="scrollBtn">↑</button>
+
+<!-- COOKIE -->
+<div class="cookie-icon" onclick="toggleCookie()">🍪</div>
+
+<div class="cookie-popup" id="cookiePopup">
+    <p>We use cookies for login sessions and preferences.</p>
+    <button onclick="acceptCookies()">Accept</button>
+    <button onclick="declineCookies()">Decline</button>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+    © 2026 Cloud Monitor | Built with Django ☁️
+</div>
+
+<!-- SCRIPT -->
+<script>
+async function checkLinks() {
+    const input = document.getElementById("urls").value;
+    const urls = input.split("\n");
+
+    document.getElementById("loading").style.display = "block";
+
+    const response = await fetch("/api/check", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(urls)
+    });
+
+    document.getElementById("loading").style.display = "none";
+
+    const data = await response.json();
+    const resultsDiv = document.getElementById("results");
+    resultsDiv.innerHTML = "";
+
+    data.forEach(item => {
+        let statusColor = item.status === "Active" ? "green" : "red";
+
+        const div = document.createElement("div");
+        div.className = "result-card";
+
+        div.innerHTML = `
+            <b>${item.url}</b><br>
+            Status: <span class="${statusColor}">${item.status}</span><br>
+            Response Time: ${item.response_time ? item.response_time + " ms" : "N/A"}
+        `;
+
+        resultsDiv.appendChild(div);
+    });
+}
+
+// DARK MODE
+function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+    localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
+}
+
+// SCROLL
+const scrollBtn = document.getElementById("scrollBtn");
+window.onscroll = function () {
+    scrollBtn.style.display = window.scrollY > 200 ? "block" : "none";
+};
+scrollBtn.onclick = function () {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+// COOKIE
+function toggleCookie() {
+    document.getElementById("cookiePopup").style.display = "block";
+}
+function acceptCookies() {
+    localStorage.setItem("cookiesAccepted", "true");
+    document.getElementById("cookiePopup").style.display = "none";
+}
+function declineCookies() {
+    localStorage.setItem("cookiesAccepted", "false");
+    document.getElementById("cookiePopup").style.display = "none";
+}
+
+// LOAD SETTINGS
+window.onload = function () {
+    if (!localStorage.getItem("cookiesAccepted")) {
+        document.getElementById("cookiePopup").style.display = "block";
+    }
+
+    if (localStorage.getItem("theme") === "dark") {
+        document.body.classList.add("dark-mode");
+    }
+};
+</script>
+
+</body>
+</html>

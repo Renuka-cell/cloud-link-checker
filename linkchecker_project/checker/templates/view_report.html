@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Report - Cloud Monitor</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <div><b>☁ Cloud Monitor</b></div>
+
+    <div>
+        <a href="/">Home</a>
+        <a href="/dashboard/">Dashboard</a>
+        <a href="/reports/">📁 My Reports</a>
+
+        {% if user.is_authenticated %}
+            <span style="margin-left:15px;">👤 {{ user.username }}</span>
+
+            <form method="post" action="/logout/" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" style="
+                    background:none;
+                    border:none;
+                    color:white;
+                    cursor:pointer;
+                    margin-left:10px;
+                ">
+                    Logout
+                </button>
+            </form>
+        {% endif %}
+    </div>
+</div>
+
+<!-- CONTENT -->
+<div class="container">
+
+    <!-- HEADER -->
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+
+        <h2>📄 {{ report.file_name }}</h2>
+
+        <!-- DOWNLOAD BUTTON (TOP RIGHT LIKE DRIVE) -->
+        <a href="{{ report.file_url }}" download>
+            <button>⬇ Download</button>
+        </a>
+
+    </div>
+
+    <!-- TABLE PREVIEW -->
+    <div class="card" style="overflow-x:auto; margin-top:20px;">
+
+        <table style="width:100%; border-collapse:collapse;">
+
+            <thead style="background:#0d6efd; color:white;">
+                <tr>
+                    {% for h in headers %}
+                        <th style="padding:10px; border:1px solid #ddd;">{{ h }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    {% for col in row %}
+                        <td style="padding:10px; border:1px solid #ddd;">
+                            {{ col }}
+                        </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+    © 2026 Cloud Monitor | Built with Django ☁️
+</div>
+
+</body>
+</html>

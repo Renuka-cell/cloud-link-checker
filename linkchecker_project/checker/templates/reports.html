@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Reports - Cloud Monitor</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <div><b>☁ Cloud Monitor</b></div>
+
+    <div>
+        <a href="/">Home</a>
+        <a href="/dashboard/">Dashboard</a>
+        <a href="/monitor/">📡 Live Monitor</a>
+        <a href="/reports/">📁 My Reports</a>
+
+        {% if user.is_authenticated %}
+            <span style="margin-left:15px;">👤 {{ user.username }}</span>
+
+            <form method="post" action="/logout/" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" style="
+                    background:none;
+                    border:none;
+                    color:white;
+                    cursor:pointer;
+                    margin-left:10px;
+                ">
+                    Logout
+                </button>
+            </form>
+        {% endif %}
+
+        <button onclick="toggleDarkMode()" style="margin-left:20px;">🌙</button>
+    </div>
+</div>
+
+<!-- CONTENT -->
+<div class="container">
+
+    <h1>📁 My Cloud Reports</h1>
+
+    <!-- STORAGE -->
+    <div class="card" style="text-align:left;">
+        <h3>📦 Storage Usage</h3>
+
+        <p>
+            <b>{{ total_storage|floatformat:2 }} KB</b> used out of {{ max_storage }} KB
+        </p>
+
+        <p>📁 {{ total_files }} files stored</p>
+
+        <div style="background:#ddd; border-radius:10px; height:20px; overflow:hidden;">
+            <div style="
+                width: {{ usage_percent }}%;
+                background: linear-gradient(90deg, #0d6efd, #4dabf7);
+                height:100%;
+                transition: width 0.5s ease;
+            "></div>
+        </div>
+
+        {% if usage_percent > 80 %}
+            <p style="color:red; margin-top:10px;">
+                ⚠️ Storage almost full!
+            </p>
+        {% endif %}
+    </div>
+
+    <!-- FILE LIST -->
+    {% for r in reports %}
+    <div class="card" style="text-align:left;">
+
+        <h3>{{ r.file_name }}</h3>
+
+        <p>Uploaded at: {{ r.created_at }}</p>
+
+        <p>📦 Size: {{ r.file_size|floatformat:2 }} KB</p>
+
+        <!-- ✅ UPDATED ACTION BUTTONS -->
+        <div style="margin-top:15px; display:flex; gap:10px; flex-wrap:wrap;">
+
+            <!-- VIEW -->
+            <a href="/report/view/{{ r.id }}/">
+                <button>👁 View File</button>
+            </a>
+
+            <!-- DOWNLOAD -->
+            <a href="{{ r.file_url }}" download>
+                <button>⬇ Download</button>
+            </a>
+
+            <!-- DELETE -->
+            <form method="post" action="/report/delete/{{ r.id }}/"
+                  onsubmit="return confirm('Are you sure you want to delete this file?');">
+                {% csrf_token %}
+                <button onclick="deleteReport({{r.id}})" style="background:red;">
+                    DELETE
+                </button>
+            </form>
+
+        </div>
+
+    </div>
+    {% empty %}
+        <p>No reports uploaded yet.</p>
+    {% endfor %}
+
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+    © 2026 Cloud Monitor | Built with Django ☁️
+</div>
+
+<script>
+function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+
+    if (document.body.classList.contains("dark-mode")) {
+        localStorage.setItem("theme", "dark");
+    } else {
+        localStorage.setItem("theme", "light");
+    }
+}
+
+window.onload = function () {
+    if (localStorage.getItem("theme") === "dark") {
+        document.body.classList.add("dark-mode");
+    }
+};
+
+//For deleting from cloudinary
+function deleteReport(reportId){
+    if (!confirm("Are you sure you want to delete this file?")) return;
+
+    fetch('/report/delete/${reportId}/',{
+        method:"POST",
+        headers:{
+            "X-CSRFToken":getCSRFToken()
+        }
+    })
+    .then(res=>{
+        if(res.ok){
+            location.reload(); //simple refresh after deletion
+        }
+        else{
+            alert("Delete failed");
+        }
+    });
+}
+
+//CSRF helper
+function getCSRFToken(){
+    return document.cookie.split('; ')
+    .find(row=>row.startsWith('csrftoken'))
+    ?.split('=')
+    ?.pop()
+}
+</script>
+
+</body>
+</html>

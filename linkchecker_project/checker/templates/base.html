@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Monitor</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <div><b>☁ Cloud Monitor</b></div>
+
+    <div>
+        <a href="/">Home</a>
+        <a href="/dashboard/">Dashboard</a>
+        <a href="/monitor/">📡 Live Monitor</a>
+
+        {% if user.is_authenticated %}
+            <span style="margin-left:15px;">👤 {{ user.username }}</span>
+
+            <form method="post" action="/logout/" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" style="background:none;border:none;color:white;cursor:pointer;margin-left:10px;">
+                    Logout
+                </button>
+            </form>
+        {% else %}
+            <a href="/login/">Login</a>
+            <a href="/signup/">Signup</a>
+        {% endif %}
+
+        <button onclick="toggleDarkMode()" style="margin-left:20px;">🌙</button>
+    </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+    {% block content %}{% endblock %}
+</div>
+
+<!-- SCROLL BUTTON -->
+<button class="scroll-top" id="scrollBtn">↑</button>
+
+<!-- COOKIE -->
+<div class="cookie-icon" onclick="toggleCookie()">🍪</div>
+
+<div class="cookie-popup" id="cookiePopup">
+    <p>We use cookies for login sessions and preferences.</p>
+    <button onclick="acceptCookies()">Accept</button>
+    <button onclick="declineCookies()">Decline</button>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+    © 2026 Cloud Monitor | Built with Django ☁️
+</div>
+
+<script>
+// Dark Mode
+function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+    localStorage.setItem("theme", document.body.classList.contains("dark-mode") ? "dark" : "light");
+}
+
+// Scroll Button
+const scrollBtn = document.getElementById("scrollBtn");
+window.onscroll = function () {
+    scrollBtn.style.display = window.scrollY > 200 ? "block" : "none";
+};
+scrollBtn.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
+// Cookie
+function toggleCookie() {
+    document.getElementById("cookiePopup").style.display = "block";
+}
+function acceptCookies() {
+    localStorage.setItem("cookiesAccepted", "true");
+    document.getElementById("cookiePopup").style.display = "none";
+}
+function declineCookies() {
+    localStorage.setItem("cookiesAccepted", "false");
+    document.getElementById("cookiePopup").style.display = "none";
+}
+
+// Load Settings
+window.onload = function () {
+    if (!localStorage.getItem("cookiesAccepted")) {
+        document.getElementById("cookiePopup").style.display = "block";
+    }
+    if (localStorage.getItem("theme") === "dark") {
+        document.body.classList.add("dark-mode");
+    }
+};
+</script>
+
+</body>
+</html>

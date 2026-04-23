@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Cloud Monitor</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<div class="navbar">
+    <div><b>☁ Cloud Monitor</b></div>
+
+    <div>
+        <a href="/">Home</a>
+        <a href="/dashboard/">Dashboard</a>
+        <a href="/monitor/">📡 Live Monitor</a>
+        <a href="/reports/">📁 My Reports</a>
+
+        {% if user.is_authenticated %}
+            <span style="margin-left:15px;">👤 {{ user.username }}</span>
+
+            <form method="post" action="/logout/" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" style="background:none;border:none;color:white;cursor:pointer;margin-left:10px;">
+                    Logout
+                </button>
+            </form>
+        {% else %}
+            <a href="/login/">Login</a>
+            <a href="/signup/">Signup</a>
+        {% endif %}
+
+        <button onclick="toggleDarkMode()" style="margin-left:20px;">🌙</button>
+    </div>
+</div>
+
+<!-- CONTENT -->
+<div class="container">
+
+    <h1>📊 Monitoring Dashboard</h1>
+
+    <!-- 🔥 EXPORT BUTTONS (IMPROVED UI) -->
+    <div style="margin-bottom:20px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+        <button onclick="downloadLocalCSV()">⬇ Download CSV</button>
+        <button onclick="downloadCloudCSV()">☁ Save to Cloud</button>
+        <button onclick="downloadJSON()">⬇ Download JSON</button>
+    </div>
+
+    <!-- 🔥 LOADING TEXT -->
+    <p id="loadingMsg" style="display:none; text-align:center;">⏳ Uploading to cloud...</p>
+
+    <!-- STATS -->
+    <div class="stats">
+        <div class="stat-box">
+            <h3>Total</h3>
+            <p>{{ total }}</p>
+        </div>
+
+        <div class="stat-box">
+            <h3 class="green">Active</h3>
+            <p>{{ active }}</p>
+        </div>
+
+        <div class="stat-box">
+            <h3 class="red">Broken</h3>
+            <p>{{ broken }}</p>
+        </div>
+    </div>
+
+    <!-- RESULTS -->
+    <h2>Recent Checks</h2>
+
+    {% for r in records %}
+    <div class="result-card">
+        <b>{{ r.url }}</b><br>
+
+        Status:
+        <span class="{% if r.status == 'Active' %}green{% else %}red{% endif %}">
+            {{ r.status }}
+        </span><br>
+
+        Response Time: {{ r.response_time }} ms<br>
+
+        Health:
+        <span class="{% if r.health == 'Good' %}green{% elif r.health == 'Slow' %}orange{% else %}red{% endif %}">
+            {{ r.health }}
+        </span><br>
+
+        Checked At: {{ r.checked_at }}
+    </div>
+    {% endfor %}
+
+</div>
+
+<!-- SCROLL BUTTON -->
+<button class="scroll-top" id="scrollBtn">↑</button>
+
+<!-- COOKIE -->
+<div class="cookie-icon" onclick="toggleCookie()">🍪</div>
+
+<div class="cookie-popup" id="cookiePopup">
+    <p>We use cookies for login sessions and preferences.</p>
+    <button onclick="acceptCookies()">Accept</button>
+    <button onclick="declineCookies()">Decline</button>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+    © 2026 Cloud Monitor | Built with Django ☁️
+</div>
+
+<!-- JS -->
+<script>
+
+// =====================
+// EXPORT FUNCTIONS
+// =====================
+
+function downloadLocalCSV() {
+    window.location.href = "/export/csv/";
+}
+
+function downloadJSON() {
+    window.location.href = "/export/json/";
+}
+
+async function downloadCloudCSV() {
+    const loading = document.getElementById("loadingMsg");
+
+    try {
+        loading.style.display = "block";
+
+        const res = await fetch("/export/cloud/");
+        const data = await res.json();
+
+        loading.style.display = "none";
+
+        if (data.status === "success") {
+            alert("✅ File uploaded to cloud successfully!");
+
+            // Open file in new tab
+            window.open(data.file_url, "_blank");
+
+        } else {
+            alert("❌ Error: " + data.message);
+        }
+
+    } catch (error) {
+        loading.style.display = "none";
+        alert("❌ Something went wrong!");
+        console.error(error);
+    }
+}
+
+// =====================
+// DARK MODE
+// =====================
+
+function toggleDarkMode() {
+    document.body.classList.toggle("dark-mode");
+
+    if (document.body.classList.contains("dark-mode")) {
+        localStorage.setItem("theme", "dark");
+    } else {
+        localStorage.setItem("theme", "light");
+    }
+}
+
+// =====================
+// SCROLL BUTTON
+// =====================
+
+const scrollBtn = document.getElementById("scrollBtn");
+
+window.onscroll = function () {
+    if (window.scrollY > 200) {
+        scrollBtn.style.display = "block";
+    } else {
+        scrollBtn.style.display = "none";
+    }
+};
+
+scrollBtn.onclick = function () {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+// =====================
+// COOKIE
+// =====================
+
+function toggleCookie() {
+    document.getElementById("cookiePopup").style.display = "block";
+}
+
+function acceptCookies() {
+    localStorage.setItem("cookiesAccepted", "true");
+    document.getElementById("cookiePopup").style.display = "none";
+}
+
+function declineCookies() {
+    localStorage.setItem("cookiesAccepted", "false");
+    document.getElementById("cookiePopup").style.display = "none";
+}
+
+// =====================
+// LOAD SETTINGS
+// =====================
+
+window.onload = function () {
+
+    if (!localStorage.getItem("cookiesAccepted")) {
+        document.getElementById("cookiePopup").style.display = "block";
+    }
+
+    if (localStorage.getItem("theme") === "dark") {
+        document.body.classList.add("dark-mode");
+    }
+};
+
+</script>
+
+</body>
+</html>
