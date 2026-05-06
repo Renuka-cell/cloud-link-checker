@@ -31,8 +31,8 @@ print("CLIENT ID:", os.getenv("GOOGLE_CLIENT_ID"))
 
 # SECURITY
 SECRET_KEY = 'django-insecure-kj8(qsm6jg7j_1@v0pp7z!ku2!w2#@i_=nhcuya2os3vtjkb@d'
-DEBUG = True
-ALLOWED_HOSTS = []
+DEBUG = os.getenv("DEBUG", "False") == "True"
+ALLOWED_HOSTS = ['*']
 
 # APPS
 INSTALLED_APPS = [
@@ -56,6 +56,7 @@ INSTALLED_APPS = [
 # MIDDLEWARE
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -156,3 +157,7 @@ cloudinary.config(
 
 
 print("CLIENT ID:", os.getenv("GOOGLE_CLIENT_ID"))
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
