@@ -16,9 +16,11 @@ Django settings for linkchecker_project project.
 
 from pathlib import Path
 import os
+import dj_database_url
 from dotenv import load_dotenv
 from decouple import config
 import cloudinary
+
 
 # ✅ BASE DIR
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -86,13 +88,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'linkchecker_project.wsgi.application'
 
-# DATABASE
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if os.environ.get("DATABASE_URL"):
+    DATABASES = {
+        'default': dj_database_url.parse(
+            os.environ.get("DATABASE_URL")
+        )
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
+'''DATABASES = {
+    'default': dj_database_url.parse(os.environ.get("postgresql://link_check_user:v4iT2tycKeoJgPLMTFCsa2SjoD7aSvKU@dpg-d7tq9cflk1mc739t9ga0-a.oregon-postgres.render.com/link_check"))
+}'''
+
 
 # PASSWORDS
 AUTH_PASSWORD_VALIDATORS = [
@@ -110,6 +123,7 @@ USE_TZ = True
 
 # STATIC
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # AUTH SETTINGS
 SITE_ID = 1
@@ -158,6 +172,6 @@ cloudinary.config(
 
 print("CLIENT ID:", os.getenv("GOOGLE_CLIENT_ID"))
 
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+#STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
