@@ -34,8 +34,7 @@ print("CLIENT ID:", os.getenv("GOOGLE_CLIENT_ID"))
 # SECURITY
 SECRET_KEY = os.environ.get("SECRET_KEY")
 DEBUG = os.environ.get("DEBUG", "True") == "True"
-ALLOWED_HOSTS = ['*']
-
+ALLOWED_HOSTS = ['.onrender.com', '127.0.0.1', 'localhost']
 # APPS
 INSTALLED_APPS = [
     'django.contrib.admin',
