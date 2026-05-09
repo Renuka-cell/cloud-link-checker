@@ -32,8 +32,8 @@ load_dotenv(BASE_DIR / ".env")
 print("CLIENT ID:", os.getenv("GOOGLE_CLIENT_ID"))
 
 # SECURITY
-SECRET_KEY = 'django-insecure-kj8(qsm6jg7j_1@v0pp7z!ku2!w2#@i_=nhcuya2os3vtjkb@d'
-DEBUG = os.getenv("DEBUG", "False") == "True"
+SECRET_KEY = os.environ.get("SECRET_KEY")
+DEBUG = os.environ.get("DEBUG", "True") == "True"
 ALLOWED_HOSTS = ['*']
 
 # APPS
