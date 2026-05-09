@@ -169,7 +169,6 @@ cloudinary.config(
 )
 
 
-print("CLIENT ID:", os.getenv("GOOGLE_CLIENT_ID"))
 
 #STATIC_ROOT = BASE_DIR / 'staticfiles'
 
