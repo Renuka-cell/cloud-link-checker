@@ -335,3 +335,399 @@ Generated CSV reports can be:
 - Deleted
 
 This provides remote access to monitoring reports.
+
+---
+
+## 🔐 Authentication
+
+The application supports two authentication methods.
+
+### Traditional Authentication
+
+- User registration
+- Username/password login
+- Logout
+- Session management
+
+### Google OAuth
+
+Google OAuth is implemented using `django-allauth`.
+
+The authentication flow is:
+
+    User
+     ↓
+    Continue with Google
+     ↓
+    Google Authentication
+     ↓
+    OAuth Callback
+     ↓
+    Django
+     ↓
+    Authenticated User
+     ↓
+    Dashboard
+
+Google OAuth credentials are stored securely using environment variables.
+
+---
+
+## 🛠️ Technology Stack
+
+| Category | Technology |
+|---|---|
+| Backend | Django |
+| API | Django Ninja |
+| Programming Language | Python |
+| Frontend | HTML, CSS, JavaScript |
+| Local Database | SQLite |
+| Production Database | PostgreSQL |
+| Cloud Storage | Cloudinary |
+| Authentication | Django Allauth + Google OAuth |
+| Scheduler | APScheduler |
+| HTTP Requests | Python Requests |
+| Static Files | WhiteNoise |
+| Production Server | Gunicorn |
+| Version Control | Git / GitHub |
+| Cloud Deployment | Render |
+
+---
+
+## 📁 Project Structure
+
+    linkchecker_project/
+    │
+    ├── checker/
+    │   ├── migrations/
+    │   ├── static/
+    │   ├── templates/
+    │   │   ├── base.html
+    │   │   ├── dashboard.html
+    │   │   ├── index.html
+    │   │   ├── login.html
+    │   │   ├── monitor.html
+    │   │   ├── reports.html
+    │   │   ├── signup.html
+    │   │   └── view_report.html
+    │   │
+    │   ├── admin.py
+    │   ├── api.py
+    │   ├── apps.py
+    │   ├── models.py
+    │   ├── monitor.py
+    │   ├── tasks.py
+    │   ├── tests.py
+    │   └── views.py
+    │
+    ├── linkchecker_project/
+    │   ├── settings.py
+    │   ├── urls.py
+    │   ├── asgi.py
+    │   └── wsgi.py
+    │
+    ├── staticfiles/
+    ├── build.sh
+    ├── manage.py
+    ├── Procfile
+    ├── requirements.txt
+    ├── .gitignore
+    └── README.md
+
+---
+
+## 🚀 Local Installation
+
+### 1. Clone the Repository
+
+    git clone https://github.com/Renuka-cell/cloud-link-checker.git
+
+### 2. Open the Project Directory
+
+    cd cloud-link-checker
+
+### 3. Create a Virtual Environment
+
+    python -m venv venv
+
+### 4. Activate the Virtual Environment
+
+#### Windows
+
+    venv\Scripts\activate
+
+#### Linux / macOS
+
+    source venv/bin/activate
+
+### 5. Install Dependencies
+
+    pip install -r requirements.txt
+
+### 6. Configure Environment Variables
+
+Create a `.env` file in the project root.
+
+Example:
+
+    SECRET_KEY=your_django_secret_key
+    DEBUG=True
+
+    EMAIL_HOST_USER=your_email
+    EMAIL_HOST_PASSWORD=your_email_password
+
+    CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+    CLOUDINARY_API_KEY=your_cloudinary_api_key
+    CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+
+    GOOGLE_CLIENT_ID=your_google_client_id
+    GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+    DATABASE_URL=your_database_url
+
+> **Important:** Never commit real credentials, API keys, passwords, OAuth secrets, or database credentials to GitHub.
+
+### 7. Apply Migrations
+
+    python manage.py makemigrations
+    python manage.py migrate
+
+### 8. Collect Static Files
+
+    python manage.py collectstatic --noinput
+
+### 9. Run the Development Server
+
+    python manage.py runserver
+
+Open the application at:
+
+    http://127.0.0.1:8000/
+
+---
+
+## ☁️ Cloud Deployment
+
+The application is deployed using the Render cloud platform.
+
+### Production Architecture
+
+    GitHub Repository
+           ↓
+         Render
+           ↓
+    Django Application
+           ↓
+    PostgreSQL Database
+           ↓
+    Cloudinary Storage
+
+### Deployment Components
+
+The deployment uses:
+
+- Render Web Service
+- Render PostgreSQL
+- Gunicorn
+- WhiteNoise
+- Environment variables
+- Django migrations
+- Static file collection
+
+### Build Command
+
+    pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate
+
+### Start Command
+
+    gunicorn linkchecker_project.wsgi:application
+
+---
+
+## 🔑 Environment Variables
+
+The following environment variables are required for the application configuration:
+
+| Variable | Purpose |
+|---|---|
+| `SECRET_KEY` | Django security key |
+| `DEBUG` | Django debug configuration |
+| `ALLOWED_HOSTS` | Allowed production hosts |
+| `EMAIL_HOST_USER` | Email service username |
+| `EMAIL_HOST_PASSWORD` | Email service password |
+| `CLOUDINARY_CLOUD_NAME` | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret |
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
+| `DATABASE_URL` | PostgreSQL database connection |
+
+---
+
+## 🔒 Security Considerations
+
+Sensitive information is not stored directly in the source code.
+
+Environment variables are used for:
+
+- Django secret key
+- Database credentials
+- Google OAuth credentials
+- Cloudinary credentials
+- Email credentials
+
+The `.env` file should remain local and must be included in `.gitignore`.
+
+---
+
+## 📊 Dashboard
+
+The monitoring dashboard provides:
+
+- Total monitored URLs
+- Active links
+- Broken links
+- Response time
+- Monitoring history
+- Recent activity
+- Cloud reports
+- Download and delete options
+
+---
+
+## 📄 Report Generation
+
+The system generates CSV reports containing monitoring information such as:
+
+    URL
+    Status
+    Response Time
+    Timestamp
+
+Reports can be downloaded locally or uploaded to Cloudinary for cloud storage.
+
+---
+
+## ⚠️ Challenges Faced
+
+### 1. Database Integration
+
+SQLite was suitable for local development, while PostgreSQL was integrated for production cloud deployment.
+
+**Solution:**
+
+Implemented environment-based database configuration using `DATABASE_URL` and `dj-database-url`.
+
+### 2. Environment Variable Management
+
+Sensitive credentials should not be hardcoded.
+
+**Solution:**
+
+Moved sensitive configuration to environment variables and configured them in Render.
+
+### 3. Static File Handling
+
+Django static files required additional configuration in production.
+
+**Solution:**
+
+Configured WhiteNoise and `collectstatic` during deployment.
+
+### 4. Google OAuth Configuration
+
+OAuth requires correct production callback and redirect configuration.
+
+**Solution:**
+
+Configured the deployed Render URL and OAuth credentials correctly.
+
+### 5. Scheduler in Cloud Environment
+
+Background scheduler execution can be affected by cloud service lifecycle and resource limitations.
+
+**Solution:**
+
+Controlled scheduler execution and optimized monitoring intervals.
+
+### 6. Deployment Configuration
+
+The project initially encountered deployment and path configuration issues.
+
+**Solution:**
+
+Corrected the repository structure, Render configuration, build commands, database configuration, and Gunicorn startup command.
+
+---
+
+## 🌐 Live Application
+
+**Live Demo:**
+
+https://linkchecker-project.onrender.com
+
+> The application may experience availability limitations depending on the Render service plan and cloud instance lifecycle.
+
+---
+
+## 📂 GitHub Repository
+
+**Source Code:**
+
+https://github.com/Renuka-cell/cloud-link-checker
+
+---
+
+## 🎓 Project Type
+
+This project was developed as an academic mini project under the Cloud Computing specialization.
+
+It demonstrates practical implementation of:
+
+- Cloud Computing
+- Web Development
+- REST APIs
+- Database Management
+- Cloud Storage
+- Authentication
+- Automation
+- Cloud Deployment
+
+---
+
+## 🔮 Future Enhancements
+
+Possible future improvements include:
+
+- Email notifications for broken links
+- Advanced website health analytics
+- Response-time graphs and historical trends
+- Celery/Redis-based background task processing
+- Improved scheduler architecture for large-scale monitoring
+- PostgreSQL optimization for large datasets
+- Role-based administration
+- Docker-based deployment
+- Monitoring alerts and notifications
+- Support for multiple cloud deployment platforms
+
+---
+
+## 👩‍💻 Author
+
+**Renuka Balaji Biradar**
+
+Computer Science & Engineering
+
+**GitHub:**
+
+https://github.com/Renuka-cell
+
+**LinkedIn:**
+
+https://www.linkedin.com/in/renuka-biradar-782100273/
+
+---
+
+## 📜 License
+
+This project was developed for academic and educational purposes.
